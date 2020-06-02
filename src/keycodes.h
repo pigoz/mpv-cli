@@ -1,3 +1,4 @@
 #pragma once
 #include <SDL.h>
-char* keycode(SDL_Keysym sym);
+#include <mpv/client.h>
+const char* keycode(SDL_Keysym sym);

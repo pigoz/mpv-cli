@@ -46,12 +46,16 @@ int eventloop(char *filename)
     if (!mpv)
         die("context init failed");
 
+    mpv_set_option_string(mpv, "config", "yes");
+    mpv_set_option_string(mpv, "input-terminal", "yes");
+    mpv_set_option_string(mpv, "terminal", "yes"); // evil
+
     // Some minor options can only be set before mpv_initialize().
     if (mpv_initialize(mpv) < 0)
         die("mpv init failed");
 
     mpv_set_option_string(mpv, "input-default-bindings", "yes");
-    mpv_request_log_messages(mpv, "info");
+    // mpv_request_log_messages(mpv, "info");
 
     // Jesus Christ SDL, you suck!
     SDL_SetHint(SDL_HINT_NO_SIGNAL_HANDLERS, "no");
@@ -59,10 +63,15 @@ int eventloop(char *filename)
     if (SDL_Init(SDL_INIT_VIDEO) < 0)
         die("SDL init failed");
 
-    SDL_Window *window =
-        SDL_CreateWindow("mpv", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
-                         1280, 720, SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN |
-                                    SDL_WINDOW_RESIZABLE);
+    int display = 0;
+    int w = 1280;
+    int y = 720;
+
+    SDL_Window *window = SDL_CreateWindow("mpv",
+        SDL_WINDOWPOS_CENTERED_DISPLAY(display),
+        SDL_WINDOWPOS_CENTERED_DISPLAY(display),
+        w, y, SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE);
+
     if (!window)
         die("failed to create SDL window");
 
@@ -133,12 +142,18 @@ int eventloop(char *filename)
                 redraw = 1;
             break;
         case SDL_KEYDOWN: {
-            const char *cmd[] = {"keydown", keycode(event.key.keysym), NULL};
+            const char *key = keycode(event.key.keysym);
+            if (!key)
+                break;
+            const char *cmd[] = {"keydown", key, NULL};
             mpv_command_async(mpv, 0, cmd);
             break;
         }
         case SDL_KEYUP: {
-            const char *cmd[] = {"keyup", keycode(event.key.keysym), NULL};
+            const char *key = keycode(event.key.keysym);
+            if (!key)
+                break;
+            const char *cmd[] = {"keyup", key, NULL};
             mpv_command_async(mpv, 0, cmd);
             break;
         }
@@ -161,11 +176,11 @@ int eventloop(char *filename)
                         continue;
                     if (mp_event->event_id == MPV_EVENT_SHUTDOWN)
                         goto done;
-                    if (mp_event->event_id == MPV_EVENT_LOG_MESSAGE) {
-                        mpv_event_log_message *msg = mp_event->data;
-                        printf("[mpv] %s", msg->text);
-                        continue;
-                    }
+                    // if (mp_event->event_id == MPV_EVENT_LOG_MESSAGE) {
+                    //     mpv_event_log_message *msg = mp_event->data;
+                    //     printf("[mpv] %s", msg->text);
+                    //     continue;
+                    // }
                     if (mp_event->event_id == MPV_EVENT_PROPERTY_CHANGE) {
                         mpv_event_property *property = mp_event->data;
                         if (strcmp(property->name, "fullscreen") == 0) {
@@ -175,7 +190,7 @@ int eventloop(char *filename)
                         }
                         continue;
                     }
-                    printf("[event] %s\n", mpv_event_name(mp_event->event_id));
+                    // printf("[event] %s\n", mpv_event_name(mp_event->event_id));
                 }
             }
         }
@@ -206,10 +221,6 @@ done:
     // Destroy the GL renderer and all of the GL objects it allocated. If video
     // is still running, the video track will be deselected.
     mpv_render_context_free(mpv_gl);
-
     mpv_detach_destroy(mpv);
-
-    printf("bye.\n");
     return 0;
-
 }

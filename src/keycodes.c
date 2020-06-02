@@ -1,9 +1,19 @@
-#include <mpv/client.h>
 #include <SDL.h>
 
 struct keymap_entry {
     SDL_Keycode sdl;
     char* mpv;
+};
+
+const SDL_Keycode blacklist[] = {
+    SDLK_LSHIFT,
+    SDLK_RSHIFT,
+    SDLK_LALT,
+    SDLK_RALT,
+    SDLK_LCTRL,
+    SDLK_RCTRL,
+    SDLK_LGUI,
+    SDLK_RGUI,
 };
 
 const struct keymap_entry keys[] = {
@@ -14,27 +24,27 @@ const struct keymap_entry keys[] = {
     {SDLK_PRINTSCREEN, "PRINT"},
     {SDLK_PAUSE, "PAUSE"},
     {SDLK_SPACE, "SPACE"},
-    // {SDLK_INSERT, MP_KEY_INSERT},
-    // {SDLK_HOME, MP_KEY_HOME},
-    // {SDLK_PAGEUP, MP_KEY_PAGE_UP},
-    // {SDLK_DELETE, MP_KEY_DELETE},
-    // {SDLK_END, MP_KEY_END},
-    // {SDLK_PAGEDOWN, MP_KEY_PAGE_DOWN},
-    // {SDLK_RIGHT, MP_KEY_RIGHT},
-    // {SDLK_LEFT, MP_KEY_LEFT},
-    // {SDLK_DOWN, MP_KEY_DOWN},
-    // {SDLK_UP, MP_KEY_UP},
-    // {SDLK_KP_ENTER, MP_KEY_KPENTER},
-    // {SDLK_KP_1, MP_KEY_KP1},
-    // {SDLK_KP_2, MP_KEY_KP2},
-    // {SDLK_KP_3, MP_KEY_KP3},
-    // {SDLK_KP_4, MP_KEY_KP4},
-    // {SDLK_KP_5, MP_KEY_KP5},
-    // {SDLK_KP_6, MP_KEY_KP6},
-    // {SDLK_KP_7, MP_KEY_KP7},
-    // {SDLK_KP_8, MP_KEY_KP8},
-    // {SDLK_KP_9, MP_KEY_KP9},
-    // {SDLK_KP_0, MP_KEY_KP0},
+    {SDLK_INSERT, "INS"},
+    {SDLK_HOME, "HOME"},
+    {SDLK_PAGEUP, "PGUP"},
+    {SDLK_DELETE, "DEL"},
+    {SDLK_END, "END"},
+    {SDLK_PAGEDOWN, "PGDWN"},
+    {SDLK_RIGHT, "RIGHT"},
+    {SDLK_LEFT, "LEFT"},
+    {SDLK_DOWN, "DOWN"},
+    {SDLK_UP, "UP"},
+    {SDLK_KP_ENTER, "KP_ENTER"},
+    {SDLK_KP_1, "KP1"},
+    {SDLK_KP_2, "KP2"},
+    {SDLK_KP_3, "KP3"},
+    {SDLK_KP_4, "KP4"},
+    {SDLK_KP_5, "KP5"},
+    {SDLK_KP_6, "KP6"},
+    {SDLK_KP_7, "KP7"},
+    {SDLK_KP_8, "KP8"},
+    {SDLK_KP_9, "KP9"},
+    {SDLK_KP_0, "KP0"},
     // {SDLK_KP_PERIOD, MP_KEY_KPDEC},
     // {SDLK_POWER, MP_KEY_POWER},
     // {SDLK_MENU, MP_KEY_MENU},
@@ -72,6 +82,16 @@ const struct keymap_entry keys[] = {
     // {SDLK_F22, MP_KEY_F + 22},
     // {SDLK_F23, MP_KEY_F + 23},
     // {SDLK_F24, MP_KEY_F + 24}
+    {SDLK_0, "0"},
+    {SDLK_1, "1"},
+    {SDLK_2, "2"},
+    {SDLK_3, "3"},
+    {SDLK_4, "4"},
+    {SDLK_5, "5"},
+    {SDLK_6, "6"},
+    {SDLK_7, "7"},
+    {SDLK_8, "8"},
+    {SDLK_9, "9"},
     {SDLK_a, "a"},
     {SDLK_b, "b"},
     {SDLK_c, "c"},
@@ -100,13 +120,19 @@ const struct keymap_entry keys[] = {
     {SDLK_z, "z"}
 };
 
-char* keycode(SDL_Keysym keysym)
+const char* keycode(SDL_Keysym keysym)
 {
+    for (int i = 0; i < sizeof(blacklist) / sizeof(blacklist[0]); ++i) {
+        if (blacklist[i] == keysym.sym) {
+            return NULL;
+        }
+    }
+
     for (int i = 0; i < sizeof(keys) / sizeof(keys[0]); ++i) {
         if (keys[i].sdl == keysym.sym) {
             return keys[i].mpv;
         }
     }
-    // TODO so we can tell something went wrong
-    return "NOT~FOUND";
+
+    return SDL_GetKeyName(keysym.sym);
 }
