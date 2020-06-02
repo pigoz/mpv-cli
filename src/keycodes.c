@@ -1,4 +1,5 @@
 #include <SDL.h>
+#include <ctype.h>
 
 struct keymap_entry {
     SDL_Keycode sdl;
@@ -58,67 +59,12 @@ const struct keymap_entry keys[] = {
     // {SDLK_AUDIOSTOP, MP_KEY_STOP},
     // {SDLK_AUDIOPLAY, MP_KEY_PLAY},
     // {SDLK_AUDIOMUTE, MP_KEY_MUTE},
-    // {SDLK_F1, MP_KEY_F + 1},
-    // {SDLK_F2, MP_KEY_F + 2},
-    // {SDLK_F3, MP_KEY_F + 3},
-    // {SDLK_F4, MP_KEY_F + 4},
-    // {SDLK_F5, MP_KEY_F + 5},
-    // {SDLK_F6, MP_KEY_F + 6},
-    // {SDLK_F7, MP_KEY_F + 7},
-    // {SDLK_F8, MP_KEY_F + 8},
-    // {SDLK_F9, MP_KEY_F + 9},
-    // {SDLK_F10, MP_KEY_F + 10},
-    // {SDLK_F11, MP_KEY_F + 11},
-    // {SDLK_F12, MP_KEY_F + 12},
-    // {SDLK_F13, MP_KEY_F + 13},
-    // {SDLK_F14, MP_KEY_F + 14},
-    // {SDLK_F15, MP_KEY_F + 15},
-    // {SDLK_F16, MP_KEY_F + 16},
-    // {SDLK_F17, MP_KEY_F + 17},
-    // {SDLK_F18, MP_KEY_F + 18},
-    // {SDLK_F19, MP_KEY_F + 19},
-    // {SDLK_F20, MP_KEY_F + 20},
-    // {SDLK_F21, MP_KEY_F + 21},
-    // {SDLK_F22, MP_KEY_F + 22},
-    // {SDLK_F23, MP_KEY_F + 23},
-    // {SDLK_F24, MP_KEY_F + 24}
-    {SDLK_0, "0"},
-    {SDLK_1, "1"},
-    {SDLK_2, "2"},
-    {SDLK_3, "3"},
-    {SDLK_4, "4"},
-    {SDLK_5, "5"},
-    {SDLK_6, "6"},
-    {SDLK_7, "7"},
-    {SDLK_8, "8"},
-    {SDLK_9, "9"},
-    {SDLK_a, "a"},
-    {SDLK_b, "b"},
-    {SDLK_c, "c"},
-    {SDLK_d, "d"},
-    {SDLK_e, "e"},
-    {SDLK_f, "f"},
-    {SDLK_g, "g"},
-    {SDLK_h, "h"},
-    {SDLK_i, "i"},
-    {SDLK_j, "j"},
-    {SDLK_k, "k"},
-    {SDLK_l, "l"},
-    {SDLK_m, "m"},
-    {SDLK_n, "n"},
-    {SDLK_o, "o"},
-    {SDLK_p, "p"},
-    {SDLK_q, "q"},
-    {SDLK_r, "r"},
-    {SDLK_s, "s"},
-    {SDLK_t, "t"},
-    {SDLK_u, "u"},
-    {SDLK_v, "v"},
-    {SDLK_w, "w"},
-    {SDLK_x, "x"},
-    {SDLK_y, "y"},
-    {SDLK_z, "z"}
 };
+
+
+#define MAX_KEYNAME_SIZE 255
+static char keyname[MAX_KEYNAME_SIZE];
+static char keyname_mod[MAX_KEYNAME_SIZE];
 
 const char* keycode(SDL_Keysym keysym)
 {
@@ -134,5 +80,20 @@ const char* keycode(SDL_Keysym keysym)
         }
     }
 
-    return SDL_GetKeyName(keysym.sym);
+    snprintf(keyname, MAX_KEYNAME_SIZE, "%s", SDL_GetKeyName(keysym.sym));
+
+    if (keysym.sym >= SDLK_a && keysym.sym <= SDLK_z) {
+        keyname[0] = tolower(keyname[0]);
+    }
+
+    const int mod = SDL_GetModState();
+
+    snprintf(keyname_mod, MAX_KEYNAME_SIZE, "%s%s%s%s%s",
+        mod & KMOD_CTRL ? "Ctrl+" : "",
+        mod & KMOD_ALT ? "Alt+" : "",
+        mod & KMOD_GUI ? "Meta+" : "",
+        mod & KMOD_SHIFT ? "Shift+" : "",
+        keyname);
+
+    return keyname_mod;
 }
