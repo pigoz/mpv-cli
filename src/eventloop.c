@@ -5,8 +5,10 @@
 
 #include <mpv/client.h>
 #include <mpv/render_gl.h>
+#include "eventloop.h"
 #include "keycodes.h"
 #include "gamepad.h"
+#include "utils.h"
 
 static Uint32 wakeup_on_mpv_render_update, wakeup_on_mpv_events;
 
@@ -41,15 +43,25 @@ static SDL_HitTestResult hit_test(
     return SDL_HITTEST_DRAGGABLE;
 }
 
-int eventloop(char *filename)
+int eventloop(const char *filename, struct el_option opts[], int options_size)
 {
     mpv_handle *mpv = mpv_create();
     if (!mpv)
         die("context init failed");
 
+    int display = 0;
+
     mpv_set_option_string(mpv, "config", "yes");
     mpv_set_option_string(mpv, "input-terminal", "yes");
     mpv_set_option_string(mpv, "terminal", "yes"); // evil
+
+    for (int i = 0; i < options_size; i++) {
+        mpv_set_option_string(mpv, opts[i].name, opts[i].value);
+
+        if (strcmp(opts[i].name, "display") == 0) {
+            display = atoi(opts[i].value);
+        }
+    }
 
     // Some minor options can only be set before mpv_initialize().
     if (mpv_initialize(mpv) < 0)
@@ -64,7 +76,6 @@ int eventloop(char *filename)
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_GAMECONTROLLER) < 0)
         die("SDL init failed");
 
-    int display = 0;
     int w = 1280;
     int y = 720;
 

@@ -1,6 +1,6 @@
 #include <SDL.h>
 #include "gamepad.h"
-#define MP_ARRAY_SIZE(s) (sizeof(s) / sizeof((s)[0]))
+#include "utils.h"
 
 static SDL_GameController *controller;
 
