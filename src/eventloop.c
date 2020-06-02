@@ -6,6 +6,7 @@
 #include <mpv/client.h>
 #include <mpv/render_gl.h>
 #include "keycodes.h"
+#include "gamepad.h"
 
 static Uint32 wakeup_on_mpv_render_update, wakeup_on_mpv_events;
 
@@ -60,7 +61,7 @@ int eventloop(char *filename)
     // Jesus Christ SDL, you suck!
     SDL_SetHint(SDL_HINT_NO_SIGNAL_HANDLERS, "no");
 
-    if (SDL_Init(SDL_INIT_VIDEO) < 0)
+    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_GAMECONTROLLER) < 0)
         die("SDL init failed");
 
     int display = 0;
@@ -157,6 +158,39 @@ int eventloop(char *filename)
             mpv_command_async(mpv, 0, cmd);
             break;
         }
+        case SDL_CONTROLLERDEVICEADDED: {
+            add_gamepad(event.cdevice.which);
+            break;
+        }
+        case SDL_CONTROLLERDEVICEREMOVED: {
+            remove_gamepad(event.cdevice.which);
+            break;
+        }
+        case SDL_CONTROLLERBUTTONDOWN: {
+            const char *key = gamepad_lookup_key(event.cbutton.button);
+            if (!key)
+                break;
+            const char *cmd[] = {"keydown", key, NULL};
+            mpv_command_async(mpv, 0, cmd);
+            break;
+        }
+        case SDL_CONTROLLERBUTTONUP: {
+            const char *key = gamepad_lookup_key(event.cbutton.button);
+            if (!key)
+                break;
+            const char *cmd[] = {"keyup", key, NULL};
+            mpv_command_async(mpv, 0, cmd);
+        }
+        case SDL_CONTROLLERAXISMOTION: {
+            const struct analog key =
+                gamepad_lookup_analog_key(event.caxis.axis, event.caxis.value);
+            if (!key.key ||!key.state)
+                break;
+            const char *cmd[] = {key.state, key.key, NULL};
+            mpv_command_async(mpv, 0, cmd);
+            continue;
+        }
+
         default:
             // Happens when there is new work for the render thread (such as
             // rendering a new video frame or redrawing it).
