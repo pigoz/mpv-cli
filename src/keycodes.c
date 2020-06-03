@@ -6,17 +6,6 @@ struct keymap_entry {
     char* mpv;
 };
 
-const SDL_Keycode blacklist[] = {
-    SDLK_LSHIFT,
-    SDLK_RSHIFT,
-    SDLK_LALT,
-    SDLK_RALT,
-    SDLK_LCTRL,
-    SDLK_RCTRL,
-    SDLK_LGUI,
-    SDLK_RGUI,
-};
-
 const struct keymap_entry keys[] = {
     {SDLK_RETURN, "ENTER"},
     {SDLK_ESCAPE, "ESC"},
@@ -24,7 +13,7 @@ const struct keymap_entry keys[] = {
     {SDLK_TAB, "TAB"},
     {SDLK_PRINTSCREEN, "PRINT"},
     {SDLK_PAUSE, "PAUSE"},
-    {SDLK_SPACE, "SPACE"},
+    // {SDLK_SPACE, "SPACE"},
     {SDLK_INSERT, "INS"},
     {SDLK_HOME, "HOME"},
     {SDLK_PAGEUP, "PGUP"},
@@ -46,54 +35,68 @@ const struct keymap_entry keys[] = {
     {SDLK_KP_8, "KP8"},
     {SDLK_KP_9, "KP9"},
     {SDLK_KP_0, "KP0"},
-    // {SDLK_KP_PERIOD, MP_KEY_KPDEC},
-    // {SDLK_POWER, MP_KEY_POWER},
-    // {SDLK_MENU, MP_KEY_MENU},
-    // {SDLK_STOP, MP_KEY_STOP},
-    // {SDLK_MUTE, MP_KEY_MUTE},
-    // {SDLK_VOLUMEUP, MP_KEY_VOLUME_UP},
-    // {SDLK_VOLUMEDOWN, MP_KEY_VOLUME_DOWN},
-    // {SDLK_KP_COMMA, MP_KEY_KPDEC},
-    // {SDLK_AUDIONEXT, MP_KEY_NEXT},
-    // {SDLK_AUDIOPREV, MP_KEY_PREV},
-    // {SDLK_AUDIOSTOP, MP_KEY_STOP},
-    // {SDLK_AUDIOPLAY, MP_KEY_PLAY},
-    // {SDLK_AUDIOMUTE, MP_KEY_MUTE},
+    {SDLK_POWER, "POWER"},
+    {SDLK_MENU, "MENU"},
+    {SDLK_STOP, "STOP"},
+    {SDLK_MUTE, "MUTE"},
+    {SDLK_VOLUMEUP, "VOLUME_UP"},
+    {SDLK_VOLUMEDOWN, "VOLUME_DOWN"},
+    {SDLK_AUDIONEXT, "NEXT"},
+    {SDLK_AUDIOPREV, "PREV"},
+    {SDLK_AUDIOSTOP, "STOP"},
+    {SDLK_AUDIOPLAY, "PLAY"},
+    {SDLK_AUDIOMUTE, "MUTE"},
+    {SDLK_F1, "F1"},
+    {SDLK_F2, "F2"},
+    {SDLK_F3, "F3"},
+    {SDLK_F4, "F4"},
+    {SDLK_F5, "F5"},
+    {SDLK_F6, "F6"},
+    {SDLK_F7, "F7"},
+    {SDLK_F8, "F8"},
+    {SDLK_F9, "F9"},
+    {SDLK_F10, "F10"},
+    {SDLK_F11, "F11"},
+    {SDLK_F12, "F12"},
+    {SDLK_F13, "F13"},
+    {SDLK_F14, "F14"},
+    {SDLK_F15, "F15"},
+    {SDLK_F16, "F16"},
+    {SDLK_F17, "F17"},
+    {SDLK_F18, "F18"},
+    {SDLK_F19, "F19"},
+    {SDLK_F20, "F20"},
+    {SDLK_F21, "F21"},
+    {SDLK_F22, "F22"},
+    {SDLK_F23, "F23"},
+    {SDLK_F24, "F24"}
 };
 
 
-#define MAX_KEYNAME_SIZE 255
-static char keyname[MAX_KEYNAME_SIZE];
-static char keyname_mod[MAX_KEYNAME_SIZE];
-
 const char* keycode(SDL_Keysym keysym)
 {
-    for (int i = 0; i < sizeof(blacklist) / sizeof(blacklist[0]); ++i) {
-        if (blacklist[i] == keysym.sym) {
-            return NULL;
-        }
-    }
-
     for (int i = 0; i < sizeof(keys) / sizeof(keys[0]); ++i) {
         if (keys[i].sdl == keysym.sym) {
             return keys[i].mpv;
         }
     }
 
-    snprintf(keyname, MAX_KEYNAME_SIZE, "%s", SDL_GetKeyName(keysym.sym));
+    return NULL;
+}
 
-    if (keysym.sym >= SDLK_a && keysym.sym <= SDLK_z) {
-        keyname[0] = tolower(keyname[0]);
-    }
+#define MAX_KEYNAME_SIZE 255
+static char keyname[MAX_KEYNAME_SIZE];
 
+const char* keytext(SDL_TextInputEvent e)
+{
     const int mod = SDL_GetModState();
 
-    snprintf(keyname_mod, MAX_KEYNAME_SIZE, "%s%s%s%s%s",
+    snprintf(keyname, MAX_KEYNAME_SIZE, "%s%s%s%s%s",
         mod & KMOD_CTRL ? "Ctrl+" : "",
         mod & KMOD_ALT ? "Alt+" : "",
         mod & KMOD_GUI ? "Meta+" : "",
         mod & KMOD_SHIFT ? "Shift+" : "",
-        keyname);
+        e.text);
 
-    return keyname_mod;
+    return keyname;
 }

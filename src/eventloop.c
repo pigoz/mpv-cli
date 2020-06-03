@@ -54,6 +54,7 @@ int eventloop(const char *filename, struct el_option opts[], int options_size)
     mpv_set_option_string(mpv, "config", "yes");
     mpv_set_option_string(mpv, "input-terminal", "yes");
     mpv_set_option_string(mpv, "terminal", "yes"); // evil
+    // mpv_set_option_string(mpv, "msg-level", "all=debug");
 
     for (int i = 0; i < options_size; i++) {
         mpv_set_option_string(mpv, opts[i].name, opts[i].value);
@@ -166,6 +167,12 @@ int eventloop(const char *filename, struct el_option opts[], int options_size)
             if (!key)
                 break;
             const char *cmd[] = {"keyup", key, NULL};
+            mpv_command_async(mpv, 0, cmd);
+            break;
+        }
+        case SDL_TEXTINPUT: {
+            const char *key = keytext(event.text);
+            const char *cmd[] = {"keypress", key, NULL};
             mpv_command_async(mpv, 0, cmd);
             break;
         }
