@@ -93,7 +93,7 @@ static const struct button_map_entry_analog analog_map[] = {
         {NULL,NULL},
         {NULL,NULL},
         {"GAMEPAD_RIGHT_TRIGGER", "keyup"},
-        {"GAMEPAD_RIGHT_TRIGGER", "keyup"} },
+        {"GAMEPAD_RIGHT_TRIGGER", "keydown"} },
 };
 
 char* gamepad_lookup_key(int sdl_key)
